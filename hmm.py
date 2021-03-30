@@ -30,12 +30,12 @@ class HiddenMarkovModel:
         if transProbs == None:
             self.transProbs = np.ones((self.hiddenStates, self.hiddenStates))
             self.transProbs = self.transProbs + np.random.uniform(size=(self.hiddenStates,self.hiddenStates))
-            self.transProbs = self.transProbs/self.transProbs.sum(axis=1,keepdims=true)
+            self.transProbs = self.transProbs/self.transProbs.sum(axis=1,keepdims=True)
 
         if initialProbs == None:
             self.initialProbs = np.ones((self.hiddenStates, self.hiddenStates))
             self.initialProbs = self.transProbs + np.random.uniform(size=(self.hiddenStates,self.hiddenStates))
-            self.initialProbs = self.transProbs/self.transProbs.sum(axis=1,keepdims=true)
+            self.initialProbs = self.transProbs/self.transProbs.sum(axis=1,keepdims=True)
             self.initialProbs = self.initialProbs[np.random.randint(0,self.hiddenStates-1)]
 
         if emissionProbs == None:
@@ -155,4 +155,29 @@ class HiddenMarkovModel:
             for j in pi:
                 pi[j] = pi[j] / sum
 
-            self.emissionProbs[i].update(pi)                   
+            self.emissionProbs[i].update(pi)
+
+    #Open and save the pickle file in memory to run
+    def opener(self,fileName):
+        with open(fileName,'wb') as fileIn:
+            pickle.dump((self.transProbs,self.emissionProbs,self.initialProbs),fileIn)
+
+    #Builds emission probabilites matrix using a list of unique token which it derives in the first half of the funciton
+    def buildMatrix(self,datum):
+        tokenList = []
+
+        for line in datum:
+            currentToken = re.split(r' +',line)
+
+            for tok in currentToken:
+                if tok in tokenList:
+                    continue
+                tokenList.append(tok)
+
+        temp = np.ones((self.hiddenStates,len(tokenList)))
+        temp = temp + np.random.uniform(size=(self.hiddenStates),len(tokenList))
+        temp = temp / temp.sum(axis=1,keepdims=True)
+
+        for i in range(self.hiddenStates):
+            tempDictionary = {j: k for j, k in zip(tokenList, temp[i])}
+            self.emissionProbs.append(tempDictionary)
