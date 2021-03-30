@@ -4,6 +4,9 @@ import pickle
 from timeit import default_timer as timer
 import re
 import pandas as pd
+import string
+import logging
+import traceback
 
 class HiddenMarkovModel:
 
@@ -22,7 +25,7 @@ class HiddenMarkovModel:
         self.b = None
         self.r = None
         self.x = None
-        self.iterations = 100
+        self.iterations = 30
 
         self.rList = []
         self.xList = []
@@ -162,6 +165,15 @@ class HiddenMarkovModel:
         with open(fileName,'wb') as fileIn:
             pickle.dump((self.transProbs,self.emissionProbs,self.initialProbs),fileIn)
 
+    def trainer(self,datum,filName):
+        self.buildMatrix(datum)
+
+        for i in range(self.iterations):
+            self.Baum_Welch_Expectation(datum)
+            self.Baum_Welch_Maximization(datum)
+
+        self.opener(fileName = filName)            
+
     #Builds emission probabilites matrix using a list of unique token which it derives in the first half of the funciton
     def buildMatrix(self,datum):
         tokenList = []
@@ -232,4 +244,4 @@ class HiddenMarkovModel:
     @staticmethod
     def load(fileName):
         with open(fileName, 'rb') as fileIn:
-            return pickle.load(fileName)        
+            return pickle.load(fileName)
