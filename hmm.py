@@ -181,3 +181,55 @@ class HiddenMarkovModel:
         for i in range(self.hiddenStates):
             tempDictionary = {j: k for j, k in zip(tokenList, temp[i])}
             self.emissionProbs.append(tempDictionary)
+
+    #Viterbi algorithm used for text predicitons. Takes length of prediction and text to be predicted on as input
+    def Viterbi(self,input,n):
+        tokens = re.split(r' +',input)
+        t_1 = np.zeros((self.hiddenStates,len(tokens)))
+        t_2 = np.zeros((self.hiddenStates, len(tokens)))
+
+        for i in range(self.hiddenStates):
+            if tokens[0] in self.emissionProbs[i].keys():
+                t_1[i][0] = self.initialProbs[i] * self.emissionProbs[i][tokens[0]]
+                t_2[i][0] = 0
+
+        for i in range(1, len(tokens)):
+            for j in range(self.hiddenStates):
+                if tokens[i] in self.emissionProbs[j].keys():
+                    t_1[j][i] = np.max(t_1[:,i-1] * self.transProbs[j] * self.emissionProbs[j][tokens[i]])
+                    t_2[j][i] = np.argmax(t_1[:,i-1] * self.transProbs[j] * self.emissionProbs[j][tokens[i]])
+
+        chi = np.zeros(len(tokens))
+        zeta = np.zeros(len(tokens))
+
+        for i in range(len(tokens)-1,0,-1):
+            zeta[i-1] = t_2[int(zeta[i]),i]
+            chi[i-1] = zeta[i-1]
+
+        currentState = int(chi[len(tokens)-1])
+        soln = ''
+
+        for i in range(n):
+            currentState = np.random.choice(range(self.hiddenStates), p = self.transProbs[currentState])
+            nextToken = np.random.choice(list(self.emissionProbs[currentState].keys()),p = list(self.emissionProbs[currentState].values()))
+            soln = soln + nextToken + ' '
+
+        print(input + ' ' + soln)
+
+    #Make a string based on the analyzed data set from BW algorithm
+    def generator(self,n):
+        s = np.random.choice(range(self.hiddenStates, p = self.initialProbs))
+        currentState = s
+        soln = ''
+
+        for i in range(n):
+            currentToken = np.random.choice(list(self.emissionProbs[currentState].keys()), p = list(self.emissionProbs[currentState].values()))
+            soln = soln + currentToken + ' '
+            currentState = np.random.choice(range(self.hiddenStates, p = self.transProbs[currentState]))
+
+        print(soln)
+
+    @staticmethod
+    def load(fileName):
+        with open(fileName, 'rb') as fileIn:
+            return pickle.load(fileName)        
