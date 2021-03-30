@@ -4,13 +4,13 @@ Barebones implementation of Hidden Markov Model trained with Baum-Welch algorith
 Install some general external dependancies used in ML.
 I tried to optimize it using Numba jit but that was too tall an order for this project.
 
-#Results:
+# Results:
 
 Average run case:
 
 ![alt text](https://github.com/apurva-rai/HMM-BW-Viterbi/blob/master/img/test.png)
 
-#References:
+# References:
 
 https://medium.com/analytics-vidhya/hidden-markov-model-part-1-of-the-hmm-series-3f7fea28a08
 
