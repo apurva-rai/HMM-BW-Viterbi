@@ -18,8 +18,10 @@ class HiddenMarkovModel:
         self.emissionProbs = emissionProbs
         self.initialProbs = initialProbs
 
-        self.condProbs = None
-        self.currentProbs = None
+        self.a = None
+        self.b = None
+        self.r = None
+        self.x = None
         self.iterations = 100
 
         if transProbs == None:
@@ -35,3 +37,28 @@ class HiddenMarkovModel:
 
         if emissionProbs == None:
             self.emissionProbs = []
+
+    #Used to normalize the data set in the forward-backward algorithms
+    @staticmethod
+    def normalizer(datum):
+        return [float(x)/np.sum(datum) for x in datum]
+
+    #The forward part of the BW algorithm. This calculates the forward probabilites
+    def Baum_Welch_Forward(self,datum):
+        self.a = np.zeros((self.hiddenStates,len(datum)))
+
+        for i in range(self.hiddenStates):
+            self.a[i][0] = self.initialProbs[i] * self.emissionProbs[i][datum[0]]
+
+        self.a[:,0] = normalizer(self.a[:,0])
+
+        for i in range(len(datum)-1):
+            for j in range(self.hiddenStates):
+                sum = 0
+
+                for k in range(self.hiddenStates):
+                    sum = sum + self.a[k][i] * self.transProbs[k][j]
+
+                self.a[j][i+1] = self.emissionProbs[j][datum[i+1]] * sigma
+
+            self.a[:,i+1] = noramlizer(self.a[:,i+1])
